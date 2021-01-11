@@ -1,0 +1,227 @@
+{% extends 'id_reader/base_xh_admin.html' %}
+
+{% block title %}
+    班次设置
+{% endblock %}
+{% block css %}
+    <style>
+        .layui-form-switch {
+            margin-top: 6px
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="layui-fluid">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-form layui-card">
+                    <form action="/duty_type/" method="post" style="padding-top: 20px;">
+                        {% csrf_token %}
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">班次名称</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="name" value="" class="layui-input"
+                                           lay-verify="required" placeholder="建议三字以内..">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">班次时间</label>
+                                <div class="layui-input-block">
+                                    <input type="text" class="layui-input" name="first"
+                                           id="time1" lay-verify="required"
+                                           placeholder="请选择..">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label" style="width: 40px">跨天</label>
+                                <div class="layui-input-block" style="margin-left: 70px">
+                                    <input type="checkbox" name="is_cross1" lay-skin="switch">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">班次时间</label>
+                                <div class="layui-input-block">
+                                    <input type="text" class="layui-input" name="second"
+                                           id="time2" placeholder="可选项..">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label" style="width: 40px">跨天</label>
+                                <div class="layui-input-block" style="margin-left: 70px">
+                                    <input type="checkbox" name="is_cross2" lay-skin="switch">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">班次颜色</label>
+                                <div id="colorpicker"></div>
+                                <div class="layui-input-block" style="display: none;">
+                                    <input id="color" type="text" name="color" value="#009688" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin-left: 20px">
+                                <button type="submit" class="layui-btn layuiadmin-btn-useradmin" lay-submit
+                                        lay-filter="LAY-user-front-search">
+                                    <span>提交</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="layui-card-body">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>班次名称</th>
+                            <th>开始时间</th>
+                            <th>结束时间</th>
+                            <th>跨天</th>
+                            <th>开始时间</th>
+                            <th>结束时间</th>
+                            <th>跨天</th>
+                            <th>班次时长</th>
+                            <th>使用状态</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for o in order %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td style="color: #{{ o.color }};">{{ o.title }}</td>
+                                <td>{{ o.first_in|date:"H:i"|default:'-' }}</td>
+                                <td>{{ o.first_out|date:"H:i"|default:'-' }}</td>
+                                {% if o.is_cross1 %}
+                                    <td>是</td>
+                                {% else %}
+                                    <td>否</td>
+                                {% endif %}
+                                <td>{{ o.second_in|date:"H:i"|default:'-' }}</td>
+                                <td>{{ o.second_out|date:"H:i"|default:'-' }}</td>
+                                {% if o.is_cross2 %}
+                                    <td>是</td>
+                                {% else %}
+                                    <td>否</td>
+                                {% endif %}
+                                <td>{{ o.hours }}小时</td>
+                                {% if o.active %}
+                                    <td id="{{ o.id }}" class="in_use">有效</td>
+                                {% else %}
+                                    <td id="{{ o.id }}" class="in_use" style="color: red">停用</td>
+                                {% endif %}
+                                {% if o.active %}
+                                    <td id="{{ o.id }}" class="active">
+                                        <span id="{{ o.id }}"
+                                              class="layui-btn layui-btn-danger layui-btn-xs set_invalid">停用</span>
+                                    </td>
+                                {% else %}
+                                    <td id="{{ o.id }}" class="active">
+                                        <span id="{{ o.id }}"
+                                              class="layui-btn layui-btn-normal layui-btn-xs set_invalid">启用</span>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/layuiadmin/layui/layui.js"></script>
+    <script>
+        layui.use(['form', 'layer', 'jquery', 'laydate', 'colorpicker'], function () {
+            var layer = layui.layer;
+            var $ = layui.$;
+            var laydate = layui.laydate;
+            var colorpicker = layui.colorpicker;
+            colorpicker.render({
+                elem: '#colorpicker'
+                , color: '#5FB878'
+                , predefine: true
+                , size: 'xs'
+                , colors: ['#5fb878', '#1e9fff', '#ff5722', '#ffb800', '#01aaed', '#90ee90']
+                , change: function (color) {
+                    $('#color').val(color);
+                }
+            });
+            laydate.render({
+                elem: '#time1'
+                , type: 'time'
+                , range: true
+                , format: 'HH:mm'
+            });
+            laydate.render({
+                elem: '#time2'
+                , type: 'time'
+                , range: true
+                , format: 'HH:mm'
+            });
+            {% if msg %}
+                layer.msg('操作成功');
+            {% endif %}
+            {% if error_msg %}
+                layer.msg('不能将两个时段都设置为跨天，请重试。', {
+                    offset: '420px'
+                    , icon: 7
+                    , time: 6000
+                    , anim: 6
+                });
+            {% endif %}
+            $(".set_invalid").click(function () {
+                var opt = $(this).text();
+                if (opt === '停用') {
+                    var vid = $(this).attr('id');
+                    layer.confirm('确定停用班次？', {
+                        btn: ['确定', '取消']
+                    }, function () {
+                        $.ajax({
+                            url: "/duty_type/",
+                            type: "get",
+                            data: {'vid': vid},
+                            success: function (data) {
+                                if (data.status === 1) {
+                                    layer.msg('操作完成', {icon: 1});
+                                    $('[class="active"][id="' + vid + '"]').html('-');
+                                    $('[class="in_use"][id="' + vid + '"]').html('停用');
+                                    $('[class="in_use"][id="' + vid + '"]').css("color", "red");
+                                } else {
+                                    layer.msg('错误：' + data.error, {icon: 2});
+                                }
+                            }
+                        });
+                    }, function () {
+                        layer.closeAll();
+                    });
+                } else {
+                    var uid = $(this).attr('id');
+                    layer.confirm('确定修改使用状态？', {
+                        btn: ['确定', '取消']
+                    }, function () {
+                        $.ajax({
+                            url: "/duty_type/",
+                            type: "get",
+                            data: {'uid': uid},
+                            success: function (data) {
+                                if (data.status === 1) {
+                                    layer.msg('操作完成', {icon: 1});
+                                    $('[class="active"][id="' + uid + '"]').html('-');
+                                    $('[class="in_use"][id="' + uid + '"]').html('有效');
+                                    $('[class="in_use"][id="' + uid + '"]').removeAttr("style");
+                                } else {
+                                    layer.msg('错误：' + data.error, {icon: 2});
+                                }
+                            }
+                        });
+                    }, function () {
+                        layer.closeAll();
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

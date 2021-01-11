@@ -1,0 +1,129 @@
+{% extends 'id_reader/base_xh_admin.html' %}
+{% block content %}
+    <div class="layui-fluid" id="LAY-app-message">
+        <div class="layui-card">
+            <div class="layui-tab layui-tab-brief">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">全部消息</li>
+                    <li class="mark_read">
+                        <button class="layui-btn layui-btn-primary layui-btn-sm">
+                            全标已读
+                        </button>
+                    </li>
+                </ul>
+                <div class="layui-tab-content">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th style="display: none">id</th>
+                            <th>序号</th>
+                            <th>消息类型</th>
+                            <th>消息内容</th>
+                            <th>消息时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for m in msg_obj %}
+                            <tr>
+                                <td style="display: none">{{ m.id }}</td>
+                                <td class="msg" id="{{ m.id }}">{{ forloop.counter }}</td>
+                                {% ifequal m.type 0 %}
+                                    <td style="width: 10%;">
+                                        <a lay-href="/receive/" class="layui-btn layui-btn-xs">接收-完成</a>
+                                    </td>
+                                {% endifequal %}
+                                {% ifequal m.type 2 %}
+                                    <td style="width: 10%;">
+                                        <a lay-href="/workorder/" class="layui-btn layui-btn-xs">提交-确认</a>
+                                    </td>
+                                {% endifequal %}
+                                {% ifequal m.type 1 %}
+                                    <td style="width: 10%;">
+                                        <a lay-href="/receive/" class="layui-btn layui-btn-xs">接收-完成</a>
+                                    </td>
+                                {% endifequal %}
+                                {% ifequal m.type 3 %}
+                                    <td>
+                                        <a lay-href="/workorder/"
+                                           class="layui-btn layui-btn-danger layui-btn-xs">提交-确认</a>
+                                    </td>
+                                {% endifequal %}
+                                {% ifequal m.type 4 %}
+                                    <td>
+                                        <a lay-href="/receive/"
+                                           class="layui-btn layui-btn-danger layui-btn-xs">接收-完成</a>
+                                    </td>
+                                {% endifequal %}
+                                {% ifequal m.type 5 %}
+                                    <td>
+                                        <a lay-href="/workorder/"
+                                           class="layui-btn layui-btn-primary layui-btn-xs">提交-确认</a>
+                                    </td>
+                                {% endifequal %}
+                                {% ifequal m.type 6 %}
+                                    <td>
+                                        <a lay-href="/verify/" class="layui-btn layui-btn-warm layui-btn-xs">工单审核</a>
+                                    </td>
+                                {% endifequal %}
+                                {% ifequal m.type 7 %}
+                                    <td>
+                                        <a lay-href="/receive/"
+                                           class="layui-btn layui-btn-normal layui-btn-xs">接收-完成</a>
+                                    </td>
+                                {% endifequal %}
+                                <td class="msg" id="{{ m.id }}">{{ m.title|safe }}</td>
+                                <td class="msg" id="{{ m.id }}">{{ m.time }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/layuiadmin/layui/layui.js"></script>
+    <script>
+        layui.config({
+            base: '/static/layuiadmin/'
+            , version: true
+        }).extend({
+            index: 'lib/index'
+        }).use(['index', 'jquery',], function () {
+            var $ = layui.$;
+            $('td.msg').click(function () {
+                $('.layui-btn').trigger('click');
+                var id = $(this).attr('id');
+                $.ajax({
+                    url: '/notifications/?id=' + id,
+                    type: "get",
+                    async: false,
+                    success: function (data) {
+                        if (data === '1') {
+                            setTimeout(function () {
+                                $('#my_refresh', window.parent.document).click();
+                            }, 1000);
+                        }
+                    }
+                });
+                return false;
+            });
+            $('.mark_read').click(function () {
+                    $.ajax({
+                        url: '/notifications/?id=0',
+                        type: "get",
+                        async: false,
+                        success: function (data) {
+                            if (data === '1') {
+                                layer.msg('已全部标记已读。', {icon: 1});
+                                setTimeout(function () {
+                                    $('#my_refresh', window.parent.document).click();
+                                }, 2 * 1000);
+                            }
+                        }
+                    });
+                    return false;
+                }
+            );
+        });
+    </script>
+{% endblock %}

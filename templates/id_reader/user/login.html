@@ -1,0 +1,106 @@
+{% extends 'id_reader/base_xh_admin.html' %}
+{% block title %}
+    颍上协和医院行政管理
+{% endblock %}
+{% block link %}
+    <link rel="stylesheet" href="/static/layuiadmin/style/login.css" media="all">
+{% endblock %}
+
+{% block content %}
+    <body>
+    <div class="layadmin-user-login layadmin-user-display-show" id="LAY-user-login" style="display: none;">
+        <div class="layadmin-user-login-main">
+            <div style="text-align: center">
+                <img src="/static/logox.png" alt="" width="100px" height="100px">
+            </div>
+            <br>
+            <div class="layadmin-user-login-box layadmin-user-login-header">
+                <h2>颍上协和医院</h2>
+            </div>
+            <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
+                <form novalidate>
+                    {% csrf_token %}
+                    <div class="layui-form-item">
+                        <label class="layadmin-user-login-icon layui-icon layui-icon-username"
+                               for="LAY-user-login-username"></label>
+                        <input autofocus type="text" name="username" id="username"
+                               placeholder="用户名" class="layui-input">
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layadmin-user-login-icon layui-icon layui-icon-password"
+                               for="LAY-user-login-password"></label>
+                        <input type="password" name="password" id="password"
+                               placeholder="密码" class="layui-input">
+                    </div>
+                    <div><input type="hidden" name="url" id="url" value="{{ url }}"></div>
+
+                    {#                    <div class="layui-form-item" style="margin-bottom: 20px;">#}
+                    {#                        <a href="/reg/" class="layadmin-user-jump-change layadmin-link">注册帐号</a>#}
+                    {#                    </div>#}
+                    <br>
+                </form>
+                    <div class="layui-form-item">
+                        <button id="login-button" class="layui-btn layui-btn-fluid">登 陆
+                        </button>
+                    </div>
+            </div>
+        </div>
+
+        <div class="layui-trans layadmin-user-login-footer">
+            <p>© 2019 <a href="" target="_blank">颍上协和医院</a></p>
+        </div>
+    </div>
+
+    <script src="/static/layuiadmin/layui/layui.js"></script>
+    <script src="/static/jquery-3.3.1.js"></script>
+    <script src="/static/setupajax.js"></script>
+    <script>
+        layui.use('jquery', function () {
+            var $ = layui.$;
+            $("#login-button").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var url = $("#url").val();
+                $.ajax({
+                    url: "/login/",
+                    type: "post",
+                    async: false,
+                    data: {
+                        "username": username,
+                        "password": password,
+                        "url": url,
+                        "csrfmiddlewaretoken": $("[name='csrfmiddlewaretoken']").val()
+                    },
+                    success: function (data) {
+                        if (data.status) {
+                            layui.use('layer', function () {
+                                var layer = layui.layer;
+                                layer.msg('用户名或密码错误', {
+                                    offset: '420px'
+                                    , icon: 7
+                                    , time: 2000
+                                    , anim: 6
+                                });
+                            });
+                        } else {
+                            location.href = data.msg;
+                        }
+                    }
+                });
+                return false;
+            });
+            $(document).keyup(function (event) {
+                if (event.keyCode === 13) {
+                    var login_button = document.getElementById('password');
+                    if (login_button == document.activeElement) {
+                        $("#login-button").trigger("click");
+                    } else {
+                        $('#password').focus();
+                    }
+                }
+            });
+        })
+    </script>
+    </body>
+{% endblock %}
+

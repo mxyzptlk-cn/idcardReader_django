@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>科室排班</title>
+    <link rel="stylesheet" href="/static/layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/layuiadmin/style/admin.css" media="all">
+    <link rel="icon" href="/static/ico.ico">
+    <link href='/static/scheduler/css/fullcalendar.css' rel='stylesheet'/>
+    <link href='/static/scheduler/css/fullcalendar.print.css' rel='stylesheet' media='print'/>
+    <style>
+        body {
+            margin: 10px 10px;
+            padding: 0;
+            font-family: "Lucida Grande", Helvetica, Arial, Verdana, sans-serif;
+            font-size: 14px;
+        }
+
+        .layui-fluid {
+            padding-top: 5px;
+        }
+
+        .fc-header-toolbar {
+            margin-bottom: 4px;
+        }
+
+        #calendar {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #box {
+            display: none;
+            font-size: 16px;
+        }
+
+        .form-inline {
+            padding: 20px;
+        }
+
+        .layui-layer-title {
+            font-size: 16px;
+        }
+
+        .fc-title {
+            font-size: 15px;
+            padding-left: 5px;
+        }
+
+        .select {
+            display: block;
+            width: 100%;
+            height: 36px;
+            padding: 5px 4px;
+            margin-bottom: 20px;
+        }
+
+        .label-success {
+            background-color: #82af6f;
+        }
+
+        .label-danger {
+            background-color: #d15b47;
+        }
+        body .sc-class .layui-layer-btn .layui-layer-btn0{background:#FF5722;border-color:#FF5722;color:#fff}
+        body .sc-class .layui-layer-btn .layui-layer-btn1{background:#1E9FFF;color:#fff}
+        body .sc-class .layui-layer-btn .layui-layer-btn2{background:#009688;color:#fff}
+    </style>
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-col-md12">
+        <div class="layui-col-md9 layui-col-md-offset1">
+            <div id='calendar'></div>
+        </div>
+        <div class="layui-col-md2">
+            <fieldset class="layui-elem-field" style="margin-left: 10px; margin-top: 50px">
+                <legend>复制排班：</legend>
+                <div class="layui-field-box" style="font-size: 15px">
+                    <a href="/copy_roster_tutorial" target="_blank">→点我播放操作视频←</a>
+                </div>
+            </fieldset>
+            <fieldset class="layui-elem-field" style="margin-left: 10px; margin-top: 50px">
+                <legend>注意事项</legend>
+                <div class="layui-field-box" style="font-size: 15px">
+                    <div>1.已审核的排班无法修改</div>
+                    <div>2.确保审核前完成排班</div>
+                    <div>3.连续班请勿跨月</div>
+                </div>
+            </fieldset>
+            <fieldset class="layui-elem-field" style="margin-left: 10px; margin-top: 20px">
+                <legend>排班小计</legend>
+                <div id="hour_count" class="layui-field-box" style="font-size: 15px; margin-left: 14px;">
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
+<div id='box'>
+    <form class='form-inline'>
+        <select name='username' class='select'>
+            {% for s in staff %}
+                <option id="{{ s.nid }}" value='{{ s.username }}'>{{ s.screen_name }}</option>
+            {% endfor %}
+        </select>
+        <div class='radios'>
+            {% for d in duty_types %}
+                <label class='label_canlendar'><input id="{{ d.id }}" class='ace' type='radio' value='#{{ d.color }}'
+                                                      name='code'><span
+                        class='classes' style='color:#{{ d.color }}'>{{ d.title }}</span></label>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<script src='/static/scheduler/js/jquery.min.js'></script>
+<script src='/static/scheduler/js/moment.min.js'></script>
+<script src='/static/scheduler/js/fullcalendar.js'></script>
+<script src="/static/scheduler/js/locale/zh-cn.js"></script>
+<script src="/static/scheduler/layer/layer.js"></script>
+<script src="/static/layuiadmin/layui/layui.js"></script>
+<script>
+    $box = $('#box');
+    $calendar = $('#calendar');
+    $calendar.fullCalendar('destroy');
+    var calendar = $calendar.fullCalendar({
+        header: {
+            left: '',
+            center: 'title',
+            right: 'prev,next today'
+        },
+        buttonText: {
+            today: '今天'
+        },
+        locale: 'zh-cn',
+        defaultView: "month",
+        weekMode: 'liquid',
+        // editable: true,
+        timeFormat: 'HH:mm',
+        defaultDate: '{{ today }}',
+        navLinks: false,       // can click day/week names to navigate views
+        eventLimit: 10,        // 限制一天中显示的事件数，默认false
+        selectable: true,     // 允许用户通过单击或拖动选择日历中的对象，包括天和时间。
+        selectHelper: false,  // 当点击或拖动选择时间时，显示默认加载的提示信息，该属性只在周/天视图里可用。
+        unselectAuto: true,   // 当点击页面日历以外的位置时，自动取消当前的选中状态。
+        eventBackgroundColor: '#3a87ad',    // 设置日程事件的背景色
+        events: '/duty_scheduler/',  // 服务器返回日程接口
+        select: select,
+        eventClick: eventClick
+    });
+
+    var clip_board = null;
+    // 添加排班
+    function select(start, end, allDay, jsEvent, view) {
+        var disabledDates = '{{ editable_date }}';
+        var selectedDate = moment(start).format('YYYY-MM-DD');
+        if (disabledDates > selectedDate) {
+            if (clip_board != null) {
+                var layer_btns = ['清除', '粘贴', '关闭']
+            } else {
+                layer_btns = ['清除', '复制', '关闭']
+            }
+            layer.open({
+                skin: 'sc-class',
+                type: 1,
+                shade: false,
+                content: '',
+                title: '选择复制或粘贴目标',
+                btn: layer_btns,
+                yes: function () {
+                    clip_board = null;
+                    layer.closeAll();
+                },
+                btn2: function (index, layero) {
+                    if (clip_board) {
+                        var dst_date = start.format('YYYY-MM-DD');
+                        $.ajax(
+                            {
+                                url: '/duty_scheduler/',
+                                type: 'GET',
+                                data: {
+                                    'clip_board': clip_board,
+                                    'dst_date': dst_date,
+                                },
+                                traditional: true,
+                                success: function (ret) {
+                                    if (ret.status === 1) {
+                                        $('#calendar').fullCalendar('refetchEvents');
+                                        get_duty_count();
+                                        layer.msg('已粘贴');
+                                    } else {
+                                        layer.alert('错误：' + data.error, {icon: 62});
+                                    }
+                                }
+                            });
+                    } else {
+                        clip_board = start.format('YYYY-MM-DD') + ':' + end.format('YYYY-MM-DD');
+                        layer.msg('已复制');
+                    }
+                },
+                btn3: function (index, layero) {
+                    layer.closeAll();
+                },
+            });
+        } else {
+            if (clip_board != null) {
+                layer_btns = ['清除', '粘贴', '确认', '关闭']
+            } else {
+                layer_btns = ['清除', '复制', '确认', '关闭']
+            }
+            layer.open({
+                skin: 'sc-class',
+                type: 1,
+                shade: false,
+                content: $box,
+                title: '选择班次',
+                btn: layer_btns,
+                yes: function () {
+                    clip_board = null;
+                    layer.closeAll();
+                },
+                btn2: function (index, layero) {
+                    if (clip_board) {
+                        var dst_date = start.format('YYYY-MM-DD');
+                        $.ajax(
+                            {
+                                url: '/duty_scheduler/',
+                                type: 'GET',
+                                data: {
+                                    'clip_board': clip_board,
+                                    'dst_date': dst_date,
+                                },
+                                traditional: true,
+                                success: function (ret) {
+                                    if (ret.status === 1) {
+                                        $('#calendar').fullCalendar('refetchEvents');
+                                        get_duty_count();
+                                        layer.msg('已粘贴');
+                                    } else {
+                                        layer.alert('错误：' + data.error, {icon: 62});
+                                    }
+                                }
+                            });
+                    } else {
+                        clip_board = start.format('YYYY-MM-DD') + ':' + end.format('YYYY-MM-DD');
+                        layer.msg('已复制');
+                    }
+                },
+                btn3: function (index, layero) {
+                    let t = $box.find("input[name=code]:checked").next().text();
+                    if (t !== '') {
+                        addCallback();
+                    } else {
+                        layer.msg('请选择班次');
+                    }
+                },
+                btn4: function () {
+                    layer.closeAll();
+                },
+            });
+        }
+
+        // 添加排班 - 弹窗回调
+        function addCallback() {
+            var bgColor = $box.find("input[name=code]:checked").val();
+            var title = $box.find("input[name=code]:checked").next().text();
+            var text = $box.find("option:selected").text();
+            var this_duty = text + ' - ' + title;
+            var vid = $box.find("option:selected").attr('id');
+            var did = $box.find("input[name=code]:checked").attr('id');
+            var json = {
+                title: title + ' - ' + text,
+                text: text,
+                allDay: allDay,
+                backgroundColor: bgColor,
+                start: start.format('YYYY-MM-DD'),
+                end: end.format('YYYY-MM-DD'),
+                s_type: title,
+                vid: vid,
+                did: did,
+                verified: 0
+            };
+            var new_event = {
+                start: start.format('YYYY-MM-DD'),
+                end: end.format('YYYY-MM-DD'),
+                vid: vid,
+                did: did
+            };
+            $.ajax(
+                {
+                    url: '/duty_scheduler/',
+                    type: 'POST',
+                    traditional: true,
+                    data: {new_event: JSON.stringify(new_event)},
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.status === 1) {
+                            $('#calendar').fullCalendar('renderEvent', json, false);
+                            if ($('#s' + vid + did).length > 0) {
+                                var h = $('#s' + vid + did).text();
+                                $('#s' + vid + did).text(parseFloat(h) + 1);
+                            } else {
+                                $('#hour_count').append('<div><span>' + this_duty + '</span><span>: </span><span id="s' + vid + did + '">' + '1' + '</span></div>');
+                            }
+                        } else {
+                            layer.alert('错误：' + data.error, {icon: 62});
+                        }
+                    }
+                });
+            layer.closeAll();
+        }
+        calendar.fullCalendar('unselect');
+    }
+
+    // 更新排班
+    function eventClick(calEvent, jsEvent, view) {
+        if (calEvent.verified === 0) {
+            var code = calEvent.backgroundColor;
+            var form = [];
+            form.push("<form class='form-inline'>");
+            form.push(" <select name='username' class='select'>");
+            {% for s in staff %}
+                form.push("  <option id='{{ s.nid }}' value='{{ s.nid }}' " + (calEvent.text == '{{ s.username }}' ? 'selected' : calEvent.text) + ">{{ s.screen_name }}</option>");
+            {% endfor %}
+            form.push(" </select>");
+            form.push(" <div class='radios'>");
+            {% for d in duty_types %}
+                form.push("  <label class='label_canlendar'><input id='{{ d.id }}' type='radio' value='#{{ d.color }}' name='code' " + (code == '#{{ d.color }}' ? 'checked' : '') + "><span class='classes'style='color:#{{ d.color }}'>{{ d.title }}</span></label>");
+            {% endfor %}
+            form.push(" </div>");
+            form.push("</form>");
+            $box.html(form.join(''));
+
+            layer.open({
+                type: 1,
+                skin: 'sc-class',
+                shade: false,
+                title: '当前班次：' + calEvent.title,
+                content: $box,
+                btn: ['删除', '确认', '关闭'],
+                yes: function () {
+                    var del_event = {vid: calEvent.vid, did: calEvent.did, start: calEvent.start, end: calEvent.end};
+                    $.ajax(
+                        {
+                            url: '/duty_scheduler/',
+                            type: 'POST',
+                            traditional: true,
+                            data: {del_event: JSON.stringify(del_event)},
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.status === 1) {
+                                    delEvent(calEvent._id);
+                                    layer.closeAll();
+                                    var h = $('#s' + calEvent.vid + calEvent.did).text();
+                                    $('#s' + calEvent.vid + calEvent.did).text(parseFloat(h) - 1);
+                                } else {
+                                    layer.alert('错误：' + data.error, {icon: 62});
+                                }
+                            }
+                        });
+                },
+                btn2: function () {
+                    var old_event = {vid: calEvent.vid, did: calEvent.did, start: calEvent.start, end: calEvent.end};
+                    updateCallback(old_event);
+                },
+                btn3: function (index, layero) {
+                    layer.closeAll();
+                }
+            });
+        } else {
+            return false;
+        }
+
+        // 更新排班 - 弹窗回调
+        function updateCallback(old_event) {
+            var bgColor = $box.find("input[name=code]:checked").val();
+            var title = $box.find("input[name=code]:checked").next().text();
+            var text = $box.find("option:selected").text();
+            var this_duty = text + ' - ' + title;
+            var vid = $box.find("option:selected").attr('id');
+            var did = $box.find("input[name=code]:checked").attr('id');
+            calEvent.title = title + ' - ' + text;
+            calEvent.text = text;
+            calEvent.vid = vid;
+            calEvent.did = did;
+            calEvent.backgroundColor = bgColor;
+            var sub_event = {vid: calEvent.vid, did: calEvent.did, start: calEvent.start, end: calEvent.end};
+            $.ajax(
+                {
+                    url: '/duty_scheduler/',
+                    type: 'POST',
+                    traditional: true,
+                    data: {old_event: JSON.stringify(old_event), sub_event: JSON.stringify(sub_event)},
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.status === 1) {
+                            var h = $('#s' + old_event.vid + old_event.did).text();
+                            $('#s' + old_event.vid + old_event.did).text(parseFloat(h) - 1);
+                            if ($('#s' + vid + did).length > 0) {
+                                var h2 = $('#s' + vid + did).text();
+                                $('#s' + vid + did).text(parseFloat(h2) + 1);
+                            } else {
+                                $('#hour_count').append('<div><span>' + this_duty + '</span><span>: </span><span id="s' + vid + did + '">' + '1' + '</span></div>');
+                            }
+                            calendar.fullCalendar('updateEvent', calEvent); // 更新日历
+                            layer.closeAll();
+                        } else {
+                            layer.alert('错误：' + data.error, {icon: 62});
+                        }
+                    }
+                });
+        }
+    }
+
+    // 删除排班
+    function delEvent(_id) {
+        calendar.fullCalendar("removeEvents", _id); // 删除日历
+    }
+
+    $('.fc-prev-button').click(function () {
+        get_duty_count();
+    });
+    $('.fc-next-button').click(function () {
+        get_duty_count();
+    });
+
+    // 页面打开时执行一次
+    get_duty_count();
+    // 获取右侧排班小计的接口函数
+    function get_duty_count() {
+        var start_c = $('.fc-day').first().attr('data-date');
+        var end_c = $('.fc-day').last().attr('data-date');
+        $.ajax(
+            {
+            url: '/duty_count_ajax/',
+            type: 'GET',
+            data: {
+                'count': '{{section}}',
+                'start_c': start_c,
+                'end_c': end_c
+            },
+            traditional: true,
+            success: function (ret) {
+                if (ret.status === 1) {
+                    $('#hour_count').html('');
+                    for (i = 0; i < ret.data.length; i++) {
+                        $('#hour_count').append('<div><span>' + ret.data[i].title + '</span><span>: </span><span id="' + ret.data[i].vid + '">' + ret.data[i].count + '</span></div>');
+                     }
+                } else {
+                    layer.alert('错误：' + data.error, {icon: 62});
+                }
+            }
+        });
+    }
+
+    $('.fc-day-number').mouseenter(function () {
+    var start_c = $(this).parent().attr('data-date');
+    var pos = $(this);
+    $.ajax(
+        {
+            url: '/parse_duty_roster_day_ajax/',
+            type: 'GET',
+            data: {
+                'section': '{{section}}',
+                'start_c': start_c,
+            },
+            traditional: true,
+            success: function (ret) {
+                if (ret.status === 1) {
+                    if (ret.data.length > 1) {
+                        var tips_html = '';
+                        for (i = 0; i < ret.data.length; i++) {
+                            tips_html = tips_html + '<div style="font-size: 15px">' + ret.data[i].title + ': ' + ret.data[i].count + '</div>';
+                         }
+                        layer.tips(tips_html, pos, {
+                        tips: [4, '#393D49'],
+                        time: 6000
+                        });
+                    }
+                } else {
+                    layer.alert('错误：' + data.error, {icon: 62});
+                }
+            }
+        });
+    });
+    $('.fc-day-number').mouseleave(function () {
+        layer.closeAll('tips');
+    });
+</script>
+</body>
+</html>

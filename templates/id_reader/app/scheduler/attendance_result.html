@@ -1,0 +1,144 @@
+{% extends 'id_reader/base_xh_admin.html' %}
+
+{% block title %}
+    考勤数据
+{% endblock %}
+{% block content %}
+    <div class="layui-fluid">
+        <div class="layui-col-md12">
+            <div class="layui-card layui-col-md12">
+                <div class="layui-card-body">
+                    <div class="layui-col-md9 layui-col-md-offset1">
+                        <table class="layui-table">
+                            <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>职工</th>
+                                <th>应到时间1</th>
+                                <th>实到时间1</th>
+                                <th>应退时间2</th>
+                                <th>实退时间2</th>
+                                <th>结果1</th>
+                                <th>应到时间3</th>
+                                <th>实到时间3</th>
+                                <th>应退时间4</th>
+                                <th>实退时间4</th>
+                                <th>结果2</th>
+                                <th>考勤扣分</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for o in order %}
+                                <tr>
+                                    <td>{{ o.duty_date|date:"Y-n-j" }}</td>
+                                    <td>{{ o.staff.screen_name }}</td>
+                                    <td>{{ o.duty_type.first_in }}</td>
+                                    <td>{{ o.first_in|date:"G:i"|default:"-" }}</td>
+                                    <td>{{ o.duty_type.first_out }}</td>
+                                    <td>{{ o.first_out|date:"G:i"|default:"-" }}</td>
+                                    {% if o.get_first_result_display == '迟到' %}
+                                        <td style="color: #a94442">迟到</td>
+                                    {% elif o.get_first_result_display == '早退' %}
+                                        <td style="color: #ac2925">早退</td>
+                                    {% elif o.get_first_result_display == '缺勤' %}
+                                        <td style="color: red">缺勤</td>
+                                    {% elif o.get_first_result_display == '请假' %}
+                                        <td style="color: #3492ED">请假</td>
+                                    {% elif o.get_first_result_display == '会务' %}
+                                        <td style="color: royalblue">会务</td>
+                                    {% else %}
+                                        <td>{{ o.get_first_result_display|default:'-' }}</td>
+                                    {% endif %}
+                                    <td>{{ o.duty_type.second_in|default:"-" }}</td>
+                                    <td>{{ o.second_in|date:"G:i"|default:"-" }}</td>
+                                    <td>{{ o.duty_type.second_out|default:"-" }}</td>
+                                    <td>{{ o.second_out|date:"G:i"|default:"-" }}</td>
+                                    {% if o.get_second_result_display == '迟到' %}
+                                        <td style="color: #a94442">迟到</td>
+                                    {% elif o.get_second_result_display == '早退' %}
+                                        <td style="color: #ac2925">早退</td>
+                                    {% elif o.get_second_result_display == '缺勤' %}
+                                        <td style="color: red">缺勤</td>
+                                    {% elif o.get_second_result_display == '请假' %}
+                                        <td style="color: #3492ED">请假</td>
+                                    {% elif o.get_second_result_display == '会务' %}
+                                        <td style="color: royalblue">会务</td>
+                                    {% else %}
+                                        <td>{{ o.get_second_result_display|default:'-' }}</td>
+                                    {% endif %}
+                                    <td>{{ o.score }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <div id="pager"></div>
+                    </div>
+                    <div class="layui-col-md2">
+                        <fieldset class="layui-elem-field" style="margin-left: 10px; margin-top: 50px">
+                            <legend>选择科室</legend>
+                            <div class="layui-field-box" style="font-size: 15px">
+                                <a href="/attendance_result/?section=财务科">财务科</a>
+                                <a style="float: right"
+                                   href="/attendance_result/?section=档案管理室">病案室</a><br><br>
+                                <a href="/attendance_result/?section=医务科">医务科</a>
+                                <a style="float: right"
+                                   href="/attendance_result/?section=收费室">收费室</a><br><br>
+                                <a href="/attendance_result/?section=检验室">检验科</a>
+                                <a style="float: right"
+                                   href="/attendance_result/?section=西药房">西药房</a><br><br>
+                                <a href="/attendance_result/?section=后勤科">后勤科</a>
+                                <a style="float: right"
+                                   href="/attendance_result/?section=医保办">医保办</a><br><br>
+                                <a href="/attendance_result/?section=客服部">客服部</a>
+                                <a style="float: right"
+                                   href="/attendance_result/?section=信息科">信息科</a><br><br>
+                                <a href="/attendance_result/?section=居家养老科">居家养老</a>
+                                <a style="float: right" href="/attendance_result/?section=消毒中心">消毒中心</a><br><br>
+                                <a href="/attendance_result/?section=体检科">健管中心</a>
+                                <a style="float: right"
+                                   href="/attendance_result/?section=胃肠镜室">内镜中心</a><br><br>
+                                <a href="/attendance_result/?section=人事科">人事科</a>
+                                <a style="float: right" href="/attendance_result/?section=院部">院  部</a><br><br>
+                                <a href="/attendance_result/?section=全部">全  部</a><br><br>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div id="pager"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/layuiadmin/layui/layui.js"></script>
+    <script src="/static/js-pinyin.js"></script>
+    <script>
+        layui.config({
+            base: '/static/layuiadmin/'
+        }).extend({
+            formSelects: 'formSelects-v4'
+        }).use(['form', 'laypage'], function () {
+            var laypage = layui.laypage;
+            laypage.render({
+                elem: 'pager'
+                , count: {{ total }}
+                , limit: {{ limit }}
+                , limits: [20, 30, 50, 100]
+                , groups: 5
+                , prev: '上一页'
+                , next: '下一页'
+                , first: 1
+                , last: 100
+                , layout: ['prev', 'page', 'next', 'limit', 'count']
+                , curr: {{ page }}
+                , jump: function (obj, first) {
+                    if (!first) {
+                        {% if section %}
+                            location.href = '/attendance_result/?section={{ section }}&page=' + obj.curr + '&limit=' + obj.limit;
+                        {% else %}
+                            location.href = '/attendance_result/?page=' + obj.curr + '&limit=' + obj.limit;
+                        {% endif %}
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

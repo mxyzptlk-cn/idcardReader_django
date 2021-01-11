@@ -1,0 +1,77 @@
+{% extends 'id_reader/base_xh_admin.html' %}
+
+{% block title %}
+    我咋又忘了打卡
+{% endblock %}
+
+{% block content %}
+    <div class="layui-fluid">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-form layui-card-header layuiadmin-card-header-auto"><i
+                        class="layui-icon layui-icon-down"></i><span
+                        class="layui-badge layui-bg-blue"
+                        style="font-size: 16px; padding: 4px 4px 4px 4px;">我咋又忘了打卡</span>
+                </div>
+                <div class="layui-card-body">
+                    <form action="/fake_attendance/" method="post">
+                        {% csrf_token %}
+                    {% if request.user.username == '0028' %}
+                        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <div class="layui-input-block" style="margin-left: 10px">
+                                        <select id="who" name="who" lay-verify="required">
+                                            <option value="">哪位</option>
+                                            <option value="47">刘娅</option>
+                                            {% for c in colleague %}
+                                                <option value="{{ c.nid }}">{{ c.screen_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="layui-inline">
+                                    <div class="layui-input-block" style="margin-left: 10px">
+                                        <input type="text" id="time_stamp" name="time_stamp" autocomplete="off"
+                                               class="layui-input" lay-verify="required" placeholder="何时">
+                                    </div>
+                                </div>
+                                <div class="layui-inline">
+                                    <button style="margin-left: 10px" type="submit" class="layui-btn layuiadmin-btn-useradmin" lay-submit
+                                            lay-filter="LAY-user-front-search">
+                                        <span>提交</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div></div>
+                    {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/layuiadmin/layui/layui.js"></script>
+    <script>
+        layui.use(['form', 'jquery', 'layer', 'laydate'], function () {
+            var $ = layui.$;
+            var layer = layui.layer;
+            var laydate = layui.laydate;
+            var ua = navigator.userAgent.toLowerCase();
+            var screenwidth = window.screen.width;
+            if (!/iphone|ipad|ipod/.test(ua)) {
+                $("#iosFrame").attr("scrolling", "auto");
+            } else {
+                $('#iosFrame').width(screenwidth + 'px');
+            }
+            laydate.render({
+                elem: '#time_stamp'
+                , type: 'time'
+            });
+            {% if msg %}
+                layer.msg('操作完成', {icon: 1});
+            {% endif %}
+        });
+    </script>
+{% endblock %}

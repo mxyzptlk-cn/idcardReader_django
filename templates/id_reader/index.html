@@ -1,0 +1,44 @@
+{% extends 'id_reader/base_xh_admin.html' %}
+{% block title %}
+    颍上协和医院行政管理
+{% endblock %}
+<body class="layui-layout-body">
+{% block content %}
+    <div id="LAY_app">
+        <div class="layui-layout layui-layout-admin">
+            <div class="layui-header">
+                <ul class="layui-nav layui-layout-left">
+                    <li id="my_refresh" class="layui-nav-item" lay-unselect>
+                        <a style="font-size: 20px">
+                            颍上九合医院 - 探视记录
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="layui-body" id="LAY_app_body">
+                <div class="layadmin-tabsbody-item layui-show">
+                </div>
+            </div>
+            <div class="layadmin-body-shade" layadmin-event="shade"></div>
+        </div>
+    </div>
+    <script src="/static/layuiadmin/layui/layui.js"></script>
+    <script>
+        layui.config({
+            base: '/static/layuiadmin/'
+            , version: true
+        }).extend({
+            index: 'lib/index'
+        }).use(['index', 'layer'], function () {
+            var $ = layui.$;
+            var layer = layui.layer;
+            // 解决刷新二次提交表单问题：
+            $('#my_refresh').click(function () {
+                $('.layui-show').children().attr('src', $('.layui-show').children().attr('src'));
+            });
+        });
+    </script>
+{% endblock %}
+</body>
+
+
