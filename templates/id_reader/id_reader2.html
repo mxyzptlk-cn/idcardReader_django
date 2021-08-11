@@ -1,0 +1,289 @@
+{% extends 'id_reader/base_xh_admin.html' %}
+
+{% block title %}
+    颍上九合医院 - 旅客登记
+{% endblock %}
+
+{% block js %}
+{% endblock %}
+
+{% block content %}
+    <div id="idcard_div" style="display: none">
+        <object width="0" height="0" align="center" id="WidControl" classid="CLSID:6D2088B7-1B97-4960-9535-5115614F29E0"
+                codebase="WidControl.cab#version=1,1,0,0" vspace="0" hspace="0">
+            <PARAM NAME="_Version" VALUE="65536">
+            <PARAM NAME="_ExtentX" VALUE="0">
+            <PARAM NAME="_ExtentY" VALUE="0">
+            <PARAM NAME="_StockProps" VALUE="0">
+        </object>
+    </div>
+    <div class="layui-fluid">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <form action="/index/" method="post">
+                    {% csrf_token %}
+                    <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">姓名</label>
+                                <div class="layui-input-block" style="width: 100px">
+                                    <input type="text" name="visitor" value="" class="layui-input" lay-verify="required"
+                                           placeholder="请输入" id="visitor">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">性别</label>
+                                <div class="layui-input-block s_type" style="width: 60px">
+                                    <select name="gender" lay-verify="required" id="gender">
+                                        <option value="男">男</option>
+                                        <option value="女">女</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">身份证号</label>
+                                <div class="layui-input-block" style="width: 200px">
+                                    <input type="text" name="id_no" value="" class="layui-input"
+                                           lay-verify="required" placeholder="请输入" id="id_no">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">住址</label>
+                                <div class="layui-input-block" style="width: 380px">
+                                    <input type="text" name="address" value="" class="layui-input"
+                                           lay-verify="required" placeholder="请输入" id="address">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">电话</label>
+                                <div class="layui-input-block" style="width: 140px">
+                                    <input type="text" name="phone" value="" class="layui-input"
+                                           placeholder="请输入" id="phone">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">体温</label>
+                                <div class="layui-input-inline" style="width: 100px; margin-right: 0">
+                                    <input type="text" name="temp" class="layui-input" id="temp"
+                                           placeholder="请输入" autocomplete="off" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">探视患者</label>
+                                <div class="layui-input-block" style="width: 120px">
+                                    <input type="text" name="visitee" value="" class="layui-input" placeholder="请输入"
+                                           id="visitee">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="display: none">
+                                <label class="layui-form-label">VID</label>
+                                <div class="layui-input-block" style="width: 120px">
+                                    <input type="text" name="vid" value="" class="layui-input vid" id="vid">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button type="button" class="layui-btn layuiadmin-btn-useradmin"
+                                        lay-filter="LAY-user-front-search" id="btnCall">
+                                    <span>读卡</span>
+                                </button>
+                                <button type="submit" class="layui-btn layuiadmin-btn-useradmin" lay-submit
+                                        lay-filter="LAY-user-front-search">
+                                    <span>提交</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="layui-card-body">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>姓名</th>
+                            <th>性别</th>
+                            <th>身份证号</th>
+                            <th>住址</th>
+                            <th>电话</th>
+                            <th>登记时间</th>
+                            <th>体温</th>
+                            <th>探视患者</th>
+                            <th>修改</th>
+                            <th>删除</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for o in order %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="visitor">{{ o.visitor }}</td>
+                                {% if o.gender %}
+                                    <td class="gender">男</td>
+                                {% else %}
+                                    <td class="gender">女</td>
+                                {% endif %}
+                                <td class="id_no">{{ o.id_no }}</td>
+                                <td class="address">{{ o.address }}</td>
+                                <td class="phone">{{ o.phone }}</td>
+                                <td>{{ o.create_time|date:"Y-n-j G:i" }}</td>
+                                <td class="temp">{{ o.temp }}</td>
+                                <td class="visitee">{{ o.visitee }}</td>
+                                <td id="{{ o.id }}" class="modify">
+                                    <button class="layui-btn layui-btn-xs">修改</button>
+                                </td>
+                                <td id="{{ o.id }}" class="del">
+                                    <button class="layui-btn layui-btn-danger layui-btn-xs">删除</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <div id="pager"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/layuiadmin/layui/layui.js"></script>
+    <script>
+        layui.use(['form', 'layer', 'jquery', 'laypage'], function () {
+                var layer = layui.layer;
+                var $ = layui.$;
+                var laypage = layui.laypage;
+                laypage.render({
+                    elem: 'pager'
+                    , count: {{ total }}
+                    , limit: {{ limit }}
+                    , limits: [10, 20, 30]
+                    , groups: 5
+                    , prev: '上一页'
+                    , next: '下一页'
+                    , first: 1
+                    , last: {{ max_page }}
+                    , layout: ['prev', 'page', 'next', 'limit', 'count']
+                    , curr: {{ page }}
+                    , jump: function (obj, first) {
+                        if (!first) {
+                            location.href = '/index/?page=' + obj.curr + '&limit=' + obj.limit;
+                        }
+                    }
+                });
+                //身份证读卡
+                function getIdCardInfo() {
+                    try {
+                        if (document.all.item("WidControl") == null) {
+                            alert("请注册身份证读卡器动态库!");
+                        }
+                        var result;
+
+                        result = document.all.item("WidControl").ReadCard(1001, "d:\\wid\\photo.jpg");
+
+                        if (result == 1) {
+                            $('#id_no').val(document.all.item("WidControl").GetCode());
+                            $('#visitor').val(document.all.item("WidControl").GetName());
+                            var gender = document.all.item("WidControl").GetSex();
+                            if (gender === '女') {
+                                $("div.layui-form-select").find('dl').find('dd[lay-value="女"]').click();
+                            } else if (gender === '男') {
+                                $("div.layui-form-select").find('dl').find('dd[lay-value="男"]').click();
+                            }
+                            $('#address').val(document.all.item("WidControl").GetAddress());
+
+                        } else {
+                            if (result == -1)
+                                alert("端口初始化失败！");
+                            if (result == -2)
+                                alert("请重新将卡片放到读卡器上！");
+                            if (result == -3)
+                                alert("读取数据失败！");
+                            if (result == -4)
+                                alert("生成照片文件失败，请检查设定路径和磁盘空间！");
+                        }
+                    } catch
+                        (ex) {
+                        alert(ex.description)
+                    }
+                }
+
+                $(document).ready(function () {
+                    $("#btnCall").click(function () {
+                        getIdCardInfo()
+                    })
+                })
+
+                {% if msg %}
+                    layer.msg('操作成功');
+                {% endif %}
+                {% if error %}
+                    layer.msg('出错了，请联系管理员。。。 错误消息：\n{{ error }}', {
+                        offset: '420px'
+                        , icon: 7
+                        , time: 2000
+                        , anim: 6
+                    });
+                {% endif %}
+                $(document).on('click', '.del', function () {
+                    var vid = $(this).attr('id');
+                    var name = $(this).siblings('.visitor').text();
+                    layer.confirm('确定删除“' + name + '”的记录？', {
+                        title: '提醒',
+                        btn: ['确定', '取消']
+                    }, function () {
+                        $.ajax({
+                            url: '/index/?del_id=' + vid,
+                            type: "get",
+                            async: false,
+                            success: function (data) {
+                                if (data.status === 1) {
+                                    layer.open({
+                                        type: 1
+                                        , offset: 'auto'
+                                        , id: 'layerDemo'
+                                        , content: '<div style="padding: 20px 100px;">' + '已删除' + '</div>'
+                                        , btn: '关闭'
+                                        , btnAlign: 'c'
+                                        , shade: 0
+                                        , time: 4000
+                                        , title: '消息提醒'
+                                        , yes: function () {
+                                            window.location.href('/index/');
+                                        }
+                                    });
+                                } else if (data.status === 0) {
+                                    layer.msg('操作失败，请联系管理员' + data.error, {
+                                        offset: '420px'
+                                        , icon: 7
+                                        , time: 2000
+                                        , anim: 6
+                                    });
+                                }
+                            }
+                        });
+                    }, function () {
+                        layer.closeAll();
+                    });
+                });
+                $('.modify').click(function () {
+                    $('.vid').val($(this).attr('id'));
+                    var visitor = $(this).siblings('.visitor').text();
+                    var gender = $(this).siblings('.gender').text();
+                    if (gender === '女') {
+                        $("div.layui-form-select").find('dl').find('dd[lay-value="女"]').click();
+                    } else if (gender === '男') {
+                        $("div.layui-form-select").find('dl').find('dd[lay-value="男"]').click();
+                    }
+                    var id_no = $(this).siblings('.id_no').text();
+                    var address = $(this).siblings('.address').text();
+                    var phone = $(this).siblings('.phone').text();
+                    var temp = $(this).siblings('.temp').text();
+                    var visitee = $(this).siblings('.visitee').text();
+                    $('#visitor').val(visitor);
+                    $('#id_no').val(id_no);
+                    $('#address').val(address);
+                    $('#phone').val(phone);
+                    $('#temp').val(temp);
+                    $('#visitee').val(visitee);
+                });
+            }
+        );
+    </script>
+{% endblock %}
