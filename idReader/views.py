@@ -126,9 +126,12 @@ def check_bbh():
         if bbh_count < 10:
             bbh = bbh_last
         else:
-            pdf_path = os.path.join(settings.MEDIA_ROOT, "report_pdfs", f'{bbh_last}.pdf')
-            if not os.path.exists(pdf_path):
-                generate_report(bbh_last)
+            try:
+                pdf_path = os.path.join(settings.MEDIA_ROOT, "report_pdfs", f'{bbh_last}.pdf')
+                if not os.path.exists(pdf_path):
+                    generate_report(bbh_last)
+            except PermissionError:
+                pass
             bbh = 'B1-' + str(int(bbh_last.split('-')[1]) + 1)
     else:
         bbh = 'B1-1'
