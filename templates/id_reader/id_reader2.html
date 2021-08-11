@@ -8,7 +8,7 @@
           content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
 
     <title>
-        省外返阜人员信息登记 - 颍上九合医院
+        省外返阜人员信息登记 - 颍上九合医院 - 1
     </title>
     <link rel="stylesheet" href="/static/layuiadmin/layui/css/layui.css" media="all">
     <link rel="stylesheet" href="/static/layuiadmin/style/admin.css" media="all">
@@ -158,6 +158,13 @@
                                        id="train_no">
                             </div>
                         </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">标本号</label>
+                            <div class="layui-input-block" style="width: 120px">
+                                <input type="text" name="bbh" value="{{ bbh }}" class="layui-input" placeholder="请输入"
+                                       id="bbh">
+                            </div>
+                        </div>
                         <div class="layui-inline" style="display: none">
                             <label class="layui-form-label">VID</label>
                             <div class="layui-input-block" style="width: 120px">
@@ -166,12 +173,12 @@
                         </div>
                         <div class="layui-inline">
                             <button onclick="connect()" type="button" class="layui-btn layui-btn-normal"
-                                    lay-filter="LAY-user-front-search" id="connect_btn">
+                                    lay-filter="LAY-user-front-search" id="connect_btn" style="display: none">
                                 <span>连接</span>
                             </button>
                             <button onclick="readCert()" type="button" class="layui-btn layuiadmin-btn-useradmin"
                                     lay-filter="LAY-user-front-search" id="readCert_btn">
-                                <span>读卡</span>
+                                <span>读&nbsp;&nbsp;&nbsp;&nbsp;卡</span>
                             </button>
                             {#                            <button onclick="disconnect()" type="button" class="layui-btn layuiadmin-btn-useradmin"#}
                             {#                                    lay-filter="LAY-user-front-search" id="disconnect_btn">#}
@@ -179,7 +186,7 @@
                             {#                            </button>#}
                             <button type="submit" class="layui-btn layui-btn-danger" lay-submit
                                     lay-filter="LAY-user-front-search">
-                                <span>提交</span>
+                                <span>提&nbsp;&nbsp;&nbsp;&nbsp;交</span>
                             </button>
                         </div>
                     </div>
@@ -199,6 +206,7 @@
                         <th>目的地</th>
                         <th>是否中高风险地区</th>
                         <th>车次/航班</th>
+                        <th>标本号</th>
                         <th>修改</th>
                         <th>删除</th>
                     </tr>
@@ -224,6 +232,7 @@
                                 <td class="is_danger">否</td>
                             {% endif %}
                             <td class="train_no">{{ o.train_no }}</td>
+                            <td class="bbh">{{ o.bk1 }}</td>
                             <td id="{{ o.id }}" class="modify">
                                 <button class="layui-btn layui-btn-xs">修改</button>
                             </td>
@@ -244,14 +253,10 @@
 <br>
 <table width="100%" border="0" cellspacing="10" cellpadding="0">
     <tbody>
-
-
     <tr>
         <td align="right">结果：</td>
         <td><textarea id="result" style="display: none" readonly="readonly"></textarea></td>
     </tr>
-
-
     </tbody>
 </table>
 
@@ -287,8 +292,6 @@
                     }
                 }
             });
-
-
             {% if msg %}
                 layer.msg('操作成功');
             {% endif %}
@@ -356,6 +359,7 @@
                 var addr_b4 = $(this).siblings('.addr_b4').text();
                 var desti_addr = $(this).siblings('.desti_addr').text();
                 var train_no = $(this).siblings('.train_no').text();
+                var bbh = $(this).siblings('.bbh').text();
                 $('#partyName').val(partyName);
                 $('#certNumber').val(certNumber);
                 $('#phone').val(phone);
@@ -363,6 +367,7 @@
                 $('#addr_b4').val(addr_b4);
                 $('#desti_addr').val(desti_addr);
                 $('#train_no').val(train_no);
+                $('#bbh').val(bbh);
             });
         }
     );

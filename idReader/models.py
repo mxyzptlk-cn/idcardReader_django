@@ -13,7 +13,7 @@ class Visitors(models.Model):
     train_no = models.CharField(max_length=100, null=True, blank=True, verbose_name='车次/航班')
     create_time = models.DateTimeField(auto_now_add=True, null=True, blank=True, verbose_name='登记时间')
     valid = models.BooleanField(default=True, verbose_name='记录状态')
-    bk1 = models.CharField(max_length=6, null=True, blank=True, verbose_name='bk1')
+    bk1 = models.CharField(max_length=8, null=True, blank=True, verbose_name='bk1')
     bk2 = models.CharField(max_length=8, null=True, blank=True, verbose_name='bk2')
     bk3 = models.CharField(max_length=8, null=True, blank=True, verbose_name='bk3')
 
