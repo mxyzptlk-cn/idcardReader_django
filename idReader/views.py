@@ -118,6 +118,9 @@ def generate_report(identifier):
     doc.build(pdf_report)
 
 
+bbh_prefix = 'GT4-'
+
+
 def check_bbh():
     last_bbh = models.Visitors.objects.filter(bk1__isnull=False).last()
     if last_bbh:
@@ -134,21 +137,34 @@ def check_bbh():
                 pass
             today = datetime.date.today()
             today = today.strftime('%m%d')
-            bbh = 'GT1-' + today + '-' + str(int(bbh_last.split('-')[2]) + 1)
+            bbh = bbh_prefix + today + '-' + str(int(bbh_last.split('-')[2]) + 1)
     else:
         today = datetime.date.today()
         today = today.strftime('%m%d')
-        bbh = 'GT1-' + today + '-1'
+        bbh = bbh_prefix + today + '-1'
     return bbh
 
 
 def index(request):
     if request.is_ajax():
         del_id = request.GET.get('del_id')
+        current_bbh = request.GET.get('current_bbh')
         if del_id:
             try:
                 models.Visitors.objects.get(id=del_id).delete()
                 ret = {'status': 1}
+                return JsonResponse(ret)
+            except Exception as e:
+                return render(request, 'id_reader/template/tips/showMeError.html', {'error': e})
+        elif current_bbh:
+            try:
+                generate_report(current_bbh)
+                last_bbh = models.Visitors.objects.filter(bk1__isnull=False).last()
+                bbh_last = last_bbh.bk1
+                today = datetime.date.today()
+                today = today.strftime('%m%d')
+                bbh = bbh_prefix + today + '-' + str(int(bbh_last.split('-')[2]) + 1)
+                ret = {'status': 1, 'bbh': bbh}
                 return JsonResponse(ret)
             except Exception as e:
                 return render(request, 'id_reader/template/tips/showMeError.html', {'error': e})

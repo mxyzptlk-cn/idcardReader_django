@@ -37,7 +37,6 @@
             clearForm();
 
             var CertCtl = document.getElementById("CertCtl");
-            console.log('Connected..')
             try {
                 var result = CertCtl.connect();
                 document.getElementById("result").value = result;
@@ -163,7 +162,7 @@
                             <label class="layui-form-label">标本号</label>
                             <div class="layui-input-block" style="width: 120px">
                                 <input type="text" name="bbh" value="{{ bbh }}" class="layui-input" placeholder="请输入"
-                                       id="bbh">
+                                       id="bbh" readonly="readonly">
                             </div>
                         </div>
                         <div class="layui-inline" style="display: none">
@@ -188,6 +187,9 @@
                             <button type="submit" class="layui-btn layui-btn-danger" lay-submit
                                     lay-filter="LAY-user-front-search">
                                 <span>提&nbsp;&nbsp;&nbsp;&nbsp;交</span>
+                            </button>
+                            <button type="button" class="sdsc layui-btn layui-btn-warm" style="margin-left: 230px">
+                                <span>手动生成</span>
                             </button>
                         </div>
                     </div>
@@ -346,6 +348,50 @@
                     layer.closeAll();
                 });
             });
+
+
+            $(document).on('click', '.sdsc', function () {
+                layer.confirm('确定生成标本号为“' + '{{ bbh }}' + '”的记录？', {
+                    title: '提醒',
+                    btn: ['确定', '取消']
+                }, function () {
+                    $.ajax({
+                        // 加个随机数防止缓存
+                        url: '/index/?current_bbh=' + '{{ bbh }}' + "&" + "t=" + Math.random(),
+                        type: "get",
+                        async: false,
+                        success: function (data) {
+                            if (data.status === 1) {
+                                $('#bbh').val(data.bbh);
+                                layer.open({
+                                    type: 1
+                                    , offset: 'auto'
+                                    , id: 'layerDemo'
+                                    , content: '<div style="padding: 20px 100px;">' + '操作成功' + '</div>'
+                                    , btn: '关闭'
+                                    , btnAlign: 'c'
+                                    , shade: 0
+                                    , time: 4000
+                                    , title: '消息提醒'
+                                    , yes: function () {
+                                        layer.closeAll();
+                                    }
+                                });
+                            } else if (data.status === 0) {
+                                layer.msg('操作失败，请联系管理员' + data.error, {
+                                    offset: '420px'
+                                    , icon: 7
+                                    , time: 2000
+                                    , anim: 6
+                                });
+                            }
+                        }
+                    });
+                }, function () {
+                    layer.closeAll();
+                });
+            });
+
             $('.modify').click(function () {
                 $('.vid').val($(this).attr('id'));
                 var partyName = $(this).siblings('.partyName').text();

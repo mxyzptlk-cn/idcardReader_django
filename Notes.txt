@@ -1,5 +1,5 @@
 以下内容针对华视接口：
 1. 项目所需模块：python3 django django-cors-headers reportlab
-2. 标本号用页面title区分，修改132行标本号
+2. 标本号用页面title区分，修改views中的bbh_prefix
 3. 启动批处理
 4. 必须使用IE浏览器
