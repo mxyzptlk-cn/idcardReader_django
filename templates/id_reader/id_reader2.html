@@ -37,6 +37,7 @@
             clearForm();
 
             var CertCtl = document.getElementById("CertCtl");
+            console.log('Connected..')
             try {
                 var result = CertCtl.connect();
                 document.getElementById("result").value = result;
@@ -146,8 +147,8 @@
                             <label class="layui-form-label">中高风险</label>
                             <div class="layui-input-block" style="width: 140px">
                                 <select name="is_danger" id="is_danger" lay-verify="required">
-                                    <option value="0">否</option>
-                                    <option value="1">是</option>
+                                    <option value="f">否</option>
+                                    <option value="s">是</option>
                                 </select>
                             </div>
                         </div>
@@ -251,11 +252,11 @@
 
 
 <br>
-<table width="100%" border="0" cellspacing="10" cellpadding="0">
+<table style="display: none">
     <tbody>
     <tr>
         <td align="right">结果：</td>
-        <td><textarea id="result" style="display: none" readonly="readonly"></textarea></td>
+        <td><textarea id="result" readonly="readonly"></textarea></td>
     </tr>
     </tbody>
 </table>
@@ -274,6 +275,7 @@
             var layer = layui.layer;
             var $ = layui.$;
             var laypage = layui.laypage;
+            window.onload = connect();
             laypage.render({
                 elem: 'pager'
                 , count: {{ total }}
@@ -305,7 +307,7 @@
             {% endif %}
             $(document).on('click', '.del', function () {
                 var vid = $(this).attr('id');
-                var name = $(this).siblings('.visitor').text();
+                var name = $(this).siblings('.partyName').text();
                 layer.confirm('确定删除“' + name + '”的记录？', {
                     title: '提醒',
                     btn: ['确定', '取消']
@@ -360,6 +362,12 @@
                 var desti_addr = $(this).siblings('.desti_addr').text();
                 var train_no = $(this).siblings('.train_no').text();
                 var bbh = $(this).siblings('.bbh').text();
+                var is_danger = $(this).siblings('.is_danger').text();
+                if (is_danger === '是') {
+                    $("div.layui-form-select").find('dl').find('dd[lay-value="s"]').click();
+                } else if (is_danger === '否') {
+                    $("div.layui-form-select").find('dl').find('dd[lay-value="f"]').click();
+                }
                 $('#partyName').val(partyName);
                 $('#certNumber').val(certNumber);
                 $('#phone').val(phone);

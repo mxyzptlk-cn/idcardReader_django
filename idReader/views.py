@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-import os, shutil
+import os, shutil, datetime
 from math import ceil
 from idReader import models
 
@@ -132,13 +132,17 @@ def check_bbh():
                     generate_report(bbh_last)
             except PermissionError:
                 pass
-            bbh = 'B1-' + str(int(bbh_last.split('-')[1]) + 1)
+            today = datetime.date.today()
+            today = today.strftime('%m%d')
+            bbh = 'GT1-' + today + '-' + str(int(bbh_last.split('-')[2]) + 1)
     else:
-        bbh = 'B1-1'
+        today = datetime.date.today()
+        today = today.strftime('%m%d')
+        bbh = 'GT1-' + today + '-1'
     return bbh
 
 
-def index(request):  # todo 前端页面id_reader2有个bug：中高风险，即第二个下拉选择无法通过jQuery修改变更(因为选择器与性别下拉选择相同)
+def index(request):
     if request.is_ajax():
         del_id = request.GET.get('del_id')
         if del_id:
@@ -158,21 +162,25 @@ def index(request):  # todo 前端页面id_reader2有个bug：中高风险，即
         addr_b4 = request.POST.get('addr_b4')
         phone = request.POST.get('phone')
         desti_addr = request.POST.get('desti_addr')
-        is_danger = request.POST.get('is_danger')
         train_no = request.POST.get('train_no')
         bbh = request.POST.get('bbh')
         modify_id = request.POST.get('vid')
+        is_danger = request.POST.get('is_danger')
+        if is_danger == 's':
+            is_danger = 1
+        else:
+            is_danger = 0
         try:
             if modify_id:
                 models.Visitors.objects.filter(id=modify_id).update(visitor=partyName,
                                                                     gender=1 if gender == '1' else 0,
                                                                     id_no=certNumber, address=certAddress, phone=phone,
                                                                     addr_b4=addr_b4, desti_addr=desti_addr,
-                                                                    is_danger=1 if is_danger == '1' else 0,
+                                                                    is_danger=is_danger,
                                                                     train_no=train_no, bk1=bbh)
             else:
                 models.Visitors.objects.create(visitor=partyName,
-                                               gender=1 if gender == '1' else 0, is_danger=1 if is_danger == '1' else 0,
+                                               gender=1 if gender == '1' else 0, is_danger=is_danger,
                                                id_no=certNumber, address=certAddress, phone=phone,
                                                addr_b4=addr_b4, desti_addr=desti_addr, train_no=train_no, bk1=bbh)
             order = models.Visitors.objects.all().order_by('-create_time')
