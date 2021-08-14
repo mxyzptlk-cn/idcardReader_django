@@ -118,26 +118,29 @@ def generate_report(identifier):
     doc.build(pdf_report)
 
 
-bbh_prefix = 'GT4-'
+bbh_prefix = 'GT2-'
 
 
 def check_bbh():
     last_bbh = models.Visitors.objects.filter(bk1__isnull=False).last()
     if last_bbh:
         bbh_last = last_bbh.bk1
+        today = datetime.date.today()
+        today = today.strftime('%m%d')
         bbh_count = models.Visitors.objects.filter(bk1=bbh_last).count()
-        if bbh_count < 10:
-            bbh = bbh_last
-        else:
-            try:
-                pdf_path = os.path.join(settings.MEDIA_ROOT, "report_pdfs", f'{bbh_last}.pdf')
-                if not os.path.exists(pdf_path):
-                    generate_report(bbh_last)
-            except PermissionError:
-                pass
-            today = datetime.date.today()
-            today = today.strftime('%m%d')
-            bbh = bbh_prefix + today + '-' + str(int(bbh_last.split('-')[2]) + 1)
+        if today == bbh_last.split('-')[1]:
+            if bbh_count < 10:
+                bbh = bbh_last
+            else:
+                try:
+                    pdf_path = os.path.join(settings.MEDIA_ROOT, "report_pdfs", f'{bbh_last}.pdf')
+                    if not os.path.exists(pdf_path):
+                        generate_report(bbh_last)
+                except PermissionError:
+                    pass
+                bbh = bbh_prefix + today + '-' + str(int(bbh_last.split('-')[2]) + 1)
+        else:  # 第二天编号重置
+            bbh = bbh_prefix + today + '-1'
     else:
         today = datetime.date.today()
         today = today.strftime('%m%d')
