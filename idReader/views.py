@@ -86,20 +86,21 @@ def generate_report(identifier):
     
     rpt_title = '<para autoLeading="off" fontSize=20 align=center><b><font face="syht">省外返（来）阜人员信息登记表</font></b><br/></para>'
     pdf_report.append(Paragraph(rpt_title, normal_style))
-    pdf_report.append(Paragraph(' \n', normal_style))
     sub_title = f'<para autoLeading="off" fontSize=8 align=right><b><font face="syht">标本号：{identifier}</font></b><br/></para>'
+    sub_title2 = f'<para autoLeading="off" fontSize=8><b><font color="white">-</font></b><br/></para>'
     pdf_report.append(Paragraph(sub_title, normal_style))
+    pdf_report.append(Paragraph(sub_title2, normal_style))
     
     order = models.Visitors.objects.filter(bk1=identifier)
-    component_data = [['序号', '姓名', '性别', '身份证号', '户籍地址', '手机号', '返（来）阜前所在地（市区街道）', '目的地', '是否中高'+'\n风险地区', '车次/航班']]
+    component_data = [['序号', '姓名', '性别', '身份证号', '户籍地址', '手机号', '返（来）阜前所' + '\n在地（市区街道）', '目的地', '是否中高'+'\n风险地区', '车次/航班', '是否接'+'\n种疫苗']]
     for i in range(len(order)):
         component_data.append(
             [i + 1, order[i].visitor, '男' if order[i].gender else '女', order[i].id_no, order[i].address[0:13] + '\n' + order[i].address[13:],
-             order[i].phone, order[i].addr_b4[0:13] + '\n' + order[i].addr_b4[13:], order[i].desti_addr[0:13] + '\n' + order[i].desti_addr[13:],
-             '是' if order[i].is_danger else '否', order[i].train_no])
+             order[i].phone, order[i].addr_b4, order[i].desti_addr,
+             '是' if order[i].is_danger else '否', order[i].train_no, '是' if order[i].bk2 == 'ss' else '否'])
     
     # 创建表格对象，并设定各列宽度
-    component_table = Table(component_data, colWidths=[30, 50, 25, 110, 150, 70, 150, 150, 40, 50])
+    component_table = Table(component_data, colWidths=[30, 50, 25, 110, 150, 70, 120, 120, 40, 50, 40])
     # 添加表格样式
     component_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'syht'),  # 字体
@@ -112,13 +113,13 @@ def generate_report(identifier):
     pdf_report.append(component_table)
     
     doc = SimpleDocTemplate(pdf_path, pagesize=A4, leftMargin=1.05 * inch, rightMargin=1.05 * inch)
-    landscape_frame = Frame(doc.leftMargin, doc.bottomMargin, doc.height, doc.width, id='landscape_frame ')
+    landscape_frame = Frame(doc.leftMargin, doc.bottomMargin, doc.height, doc.width, id='landscape_frame')
     doc.addPageTemplates([PageTemplate(id='landscape', frames=landscape_frame, pagesize=landscape(A4)), ])
     
     doc.build(pdf_report)
 
 
-bbh_prefix = 'GT2-'
+bbh_prefix = 'GT4-'
 
 
 def check_bbh():
@@ -185,6 +186,7 @@ def index(request):
         bbh = request.POST.get('bbh')
         modify_id = request.POST.get('vid')
         is_danger = request.POST.get('is_danger')
+        vaccinated = request.POST.get('vaccinated')
         if is_danger == 's':
             is_danger = 1
         else:
@@ -196,11 +198,11 @@ def index(request):
                                                                     id_no=certNumber, address=certAddress, phone=phone,
                                                                     addr_b4=addr_b4, desti_addr=desti_addr,
                                                                     is_danger=is_danger,
-                                                                    train_no=train_no, bk1=bbh)
+                                                                    train_no=train_no, bk1=bbh, bk2=vaccinated)
             else:
                 models.Visitors.objects.create(visitor=partyName,
                                                gender=1 if gender == '1' else 0, is_danger=is_danger,
-                                               id_no=certNumber, address=certAddress, phone=phone,
+                                               id_no=certNumber, address=certAddress, phone=phone, bk2=vaccinated,
                                                addr_b4=addr_b4, desti_addr=desti_addr, train_no=train_no, bk1=bbh)
             order = models.Visitors.objects.all().order_by('-create_time')
             total, max_page, order, page, limit = paginator(order)
