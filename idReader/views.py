@@ -79,7 +79,7 @@ pdfmetrics.registerFont(TTFont('syht', font_path))
 
 def generate_report(identifier):
     # pdf_path = os.path.join(settings.MEDIA_ROOT, "report_pdfs", f'{identifier}.pdf')
-    pdf_path = os.path.join(os.path.expanduser("~"), 'Desktop', f'{identifier}.pdf')
+    pdf_path = os.path.join(os.path.expanduser("~"), 'Desktop', identifier.split('-')[1], f'{identifier}.pdf')
     pdf_report = []
     stylesheet = getSampleStyleSheet()
     normal_style = stylesheet['Normal']
@@ -134,7 +134,10 @@ def check_bbh():
                 bbh = bbh_last
             else:
                 try:
-                    pdf_path = os.path.join(settings.MEDIA_ROOT, "report_pdfs", f'{bbh_last}.pdf')
+                    folder_path = os.path.join(os.path.expanduser("~"), 'Desktop', today)
+                    if not os.path.exists(folder_path):
+                        os.mkdir(folder_path)
+                    pdf_path = os.path.join(folder_path, f'{bbh_last}.pdf')
                     if not os.path.exists(pdf_path):
                         generate_report(bbh_last)
                 except PermissionError:
