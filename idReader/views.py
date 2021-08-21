@@ -225,3 +225,15 @@ def index(request):
         else:
             total, max_page, order, page, limit = paginator(order)
             return render(request, 'id_reader/id_reader2.html', locals())
+
+
+def print_test(request):
+    page = request.GET.get('page')
+    limit = request.GET.get('limit')
+    order = {}
+    if page and limit:
+        total, max_page, order, page, limit = paginator(order, page, limit)
+        return render(request, 'id_reader/print_test.html', locals())
+    else:
+        total, max_page, order, page, limit = paginator(order)
+        return render(request, 'id_reader/print_test.html', locals())
