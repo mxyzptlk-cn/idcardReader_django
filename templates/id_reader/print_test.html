@@ -452,19 +452,54 @@
                 }
             });
 
+            // 多页打印（先预览后打印，免费版直接打印有水印。）
             $('.print_test').click(function () {
-                // var strHTML = document.getElementsByTagName("html")[0].innerHTML;
-                LODOP.PRINT_INITA(0, 0, 188, 116, "ysjh_code");
-                LODOP.SET_PRINT_PAGESIZE(1,0,0,'C53');
-                LODOP.ADD_PRINT_RECT(1, 0, 188, 114, 0, 1);
-                LODOP.ADD_PRINT_TEXT(20, 29, 100, 25, "郭德强");
-                LODOP.SET_PRINT_STYLEA(0, "FontName", "隶书");
-                LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
-                LODOP.ADD_PRINT_TEXT(53, 45, 75, 20, "科学家");
-                LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
-                LODOP.ADD_PRINT_IMAGE(10, 10, 290, 100, "C:/Users/mxyzptlk/PycharmProjects/idcardReader_django/media/report_pdfs/GT4-0815-2.png");
-                LODOP.SET_PRINT_STYLEA(0, "Stretch", 1)
+                    function MyPreview() {
+                        LODOP.PRINT_INITA(0, 0, '50mm', '30mm', "ysjh_code");
+                        LODOP.SET_PRINT_PAGESIZE(1, 0, 0, "C53");
+                        LODOP.SET_PRINT_MODE("PRINT_NOCOLLATE", 1);
+                        LODOP.SET_PRINTER_INDEXA("ZDesigner ZD888-203dpi ZPL");
+                        CreateAllPages();
+                        LODOP.PREVIEW();
+                    }
+
+                    function CreateAllPages() {
+                        for (i = 1; i < 4; i++) {
+                            LODOP.NewPage();
+                            LODOP.ADD_PRINT_IMAGE(21, -8, 199, 68, "C:/Users/mxyzptlk/PycharmProjects/idcardReader_django/media/report_pdfs/370000369225.png");
+                            LODOP.SET_PRINT_STYLEA(0, "Stretch", 1);
+                            LODOP.ADD_PRINT_TEXT(10, 6, 90, 20, "GT4-0822-1" + i);
+                            LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+                            LODOP.ADD_PRINT_TEXT(10, 84, 110, 20, "新冠核酸 咽拭子");
+                            LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+                            LODOP.ADD_PRINT_TEXT(89, 15, 167, 20, "2021-08-22 17:59:59:59");
+                            LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+                        }
+                    }
+                    MyPreview();
+                }
+            )
+
+            // 单页打印
+            $('.print_test11').click(function () {
+                LODOP.PRINT_INITA(0, 0, '50mm', '30mm', "ysjh_code");
+                LODOP.SET_PRINT_PAGESIZE(1, 0, 0, "C53");
+                LODOP.SET_PRINTER_INDEXA("ZDesigner ZD888-203dpi ZPL");
+                LODOP.SET_PRINT_MODE("PRINT_NOCOLLATE", 1);
+                LODOP.ADD_PRINT_IMAGE(21, -8, 199, 68, "C:/Users/mxyzptlk/PycharmProjects/idcardReader_django/media/report_pdfs/370000369225.png");
+                LODOP.SET_PRINT_STYLEA(0, "Stretch", 1);
+                LODOP.ADD_PRINT_TEXT(10, 6, 90, 20, "GT4-0822-13");
+                LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+                LODOP.ADD_PRINT_TEXT(10, 84, 110, 20, "新冠核酸 咽拭子");
+                LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+                LODOP.ADD_PRINT_TEXT(89, 15, 167, 20, "2021-08-22 17:59:59:59");
+                LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+                {#LODOP.PRINT();#}
                 LODOP.PREVIEW();
+                {#LODOP.PRINT_DESIGN();#}
+                {#Lodop版本: 6.5.2.7 C-Lodop版本: 4.1.2.7#}
+                {#var strVersion=LODOP.VERSION;#}
+                {#alert(strVersion);#}
             });
         }
     );
